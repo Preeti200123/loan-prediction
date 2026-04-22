@@ -1,0 +1,52 @@
+# Step 1: Import libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+# Step 2: Load dataset
+data = pd.read_csv("loan_data (2).csv")
+
+print("Dataset:\n", data.head())
+
+# Step 3: Handle missing values (if any)
+data.ffill(inplace=True)
+
+# Step 4: Encode categorical columns
+le = LabelEncoder()
+
+columns = ['Gender','Married','Dependents','Education',
+           'Self_Employed','Property_Area','Loan_Status']
+
+for col in columns:
+    data[col] = le.fit_transform(data[col])
+
+# Step 5: Drop Loan_ID (not useful)
+data.drop('Loan_ID', axis=1, inplace=True)
+
+# Step 6: Features & Target
+X = data.drop('Loan_Status', axis=1)
+y = data['Loan_Status']
+
+# Step 7: Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Step 8: Train model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Step 9: Prediction
+y_pred = model.predict(X_test)
+
+# Step 10: Evaluation
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+print("\nReport:\n", classification_report(y_test, y_pred))
+
+# Step 11: Predict new loan approval
+new_data = [[1,1,0,1,0,5000,0,120,360,1,2]]  
+prediction = model.predict(new_data)
+
+print("\nLoan Approval Prediction:", "Approved" if prediction[0]==1 else "Rejected")
